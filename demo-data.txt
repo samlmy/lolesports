@@ -1,0 +1,230 @@
+--- (a) Load schema and data ---------------------------------------------
+
+csc343h-liming51=> \i schema.ddl.txt
+psql:schema.ddl.txt:1: NOTICE:  drop cascades to 5 other objects
+DETAIL:  drop cascades to table team
+drop cascades to table player
+drop cascades to table match
+drop cascades to table teamscoreboard
+drop cascades to table playerscoreboard
+DROP SCHEMA
+CREATE SCHEMA
+SET
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+csc343h-liming51=> \i data.txt
+CREATE TABLE
+COPY 4054
+INSERT 0 120
+CREATE TABLE
+COPY 20270
+INSERT 0 832
+CREATE TABLE
+COPY 2027
+INSERT 0 2027
+CREATE TABLE
+COPY 4054
+INSERT 0 4054
+CREATE TABLE
+COPY 20270
+INSERT 0 20270
+DROP TABLE
+
+--- (b) Run \d on each table ---------------------------------------------
+
+csc343h-liming51=> \d team
+eboard
+\d teamscoreboard              Table "lolesport.team"
+  Column  | Type | Collation | Nullable | Default
+----------+------+-----------+----------+---------
+ teamname | text |           | not null |
+ league   | text |           | not null |
+Indexes:
+    "team_pkey" PRIMARY KEY, btree (teamname)
+Referenced by:
+    TABLE "match" CONSTRAINT "match_blue_fkey" FOREIGN KEY (blue) REFERENCES team(teamname)
+    TABLE "match" CONSTRAINT "match_red_fkey" FOREIGN KEY (red) REFERENCES team(teamname)
+    TABLE "player" CONSTRAINT "player_teamname_fkey" FOREIGN KEY (teamname) REFERENCES team(teamname)
+    TABLE "playerscoreboard" CONSTRAINT "playerscoreboard_teamname_fkey" FOREIGN KEY (teamname) REFERENCES team(teamname)
+    TABLE "teamscoreboard" CONSTRAINT "teamscoreboard_teamname_fkey" FOREIGN KEY (teamname) REFERENCES team(teamname)
+
+csc343h-liming51=> \d player
+              Table "lolesport.player"
+   Column   | Type | Collation | Nullable | Default
+------------+------+-----------+----------+---------
+ playername | text |           | not null |
+ teamname   | text |           | not null |
+Indexes:
+    "player_pkey" PRIMARY KEY, btree (playername, teamname)
+Foreign-key constraints:
+    "player_teamname_fkey" FOREIGN KEY (teamname) REFERENCES team(teamname)
+
+csc343h-liming51=> \d match
+              Table "lolesport.match"
+ Column |  Type   | Collation | Nullable | Default
+--------+---------+-----------+----------+---------
+ gameid | text    |           | not null |
+ length | integer |           | not null |
+ patch  | text    |           | not null |
+ blue   | text    |           | not null |
+ red    | text    |           | not null |
+ result | text    |           | not null |
+Indexes:
+    "match_pkey" PRIMARY KEY, btree (gameid)
+Foreign-key constraints:
+    "match_blue_fkey" FOREIGN KEY (blue) REFERENCES team(teamname)
+    "match_red_fkey" FOREIGN KEY (red) REFERENCES team(teamname)
+Referenced by:
+    TABLE "playerscoreboard" CONSTRAINT "playerscoreboard_gameid_fkey" FOREIGN KEY (gameid) REFERENCES match(gameid)
+    TABLE "teamscoreboard" CONSTRAINT "teamscoreboard_gameid_fkey" FOREIGN KEY (gameid) REFERENCES match(gameid)
+
+csc343h-liming51=> \d playerscoreboard
+           Table "lolesport.playerscoreboard"
+   Column    |  Type   | Collation | Nullable | Default
+-------------+---------+-----------+----------+---------
+ gameid      | text    |           | not null |
+ playername  | text    |           | not null |
+ teamname    | text    |           | not null |
+ position    | text    |           | not null |
+ kills       | integer |           |          |
+ gold        | integer |           |          |
+ visionscore | integer |           |          |
+Indexes:
+    "playerscoreboard_pkey" PRIMARY KEY, btree (gameid, playername)
+Foreign-key constraints:
+    "playerscoreboard_gameid_fkey" FOREIGN KEY (gameid) REFERENCES match(gameid)
+    "playerscoreboard_teamname_fkey" FOREIGN KEY (teamname) REFERENCES team(teamname)
+
+csc343h-liming51=> \d teamscoreboard
+           Table "lolesport.teamscoreboard"
+  Column   |  Type   | Collation | Nullable | Default
+-----------+---------+-----------+----------+---------
+ gameid    | text    |           | not null |
+ teamname  | text    |           | not null |
+ killsat10 | integer |           |          |
+ killsat15 | integer |           |          |
+ goldat10  | integer |           |          |
+ goldat15  | integer |           |          |
+ drakes    | integer |           |          |
+Indexes:
+    "teamscoreboard_pkey" PRIMARY KEY, btree (gameid, teamname)
+Foreign-key constraints:
+    "teamscoreboard_gameid_fkey" FOREIGN KEY (gameid) REFERENCES match(gameid)
+    "teamscoreboard_teamname_fkey" FOREIGN KEY (teamname) REFERENCES team(teamname)
+
+--- (c) Run SELECT count(*) on each table --------------------------------
+
+csc343h-liming51=> select count(*) from match;
+ count
+-------
+  2027
+(1 row)
+
+csc343h-liming51=> select count(*) from player;
+ count
+-------
+   832
+(1 row)
+
+csc343h-liming51=> select count(*) from playerscoreboard;
+unt(*) from teamscoreboard; count
+-------
+ 20270
+(1 row)
+
+csc343h-liming51=> select count(*) from team;
+ count
+-------
+   120
+(1 row)
+
+csc343h-liming51=> select count(*) from teamscoreboard;
+ count
+-------
+  4054
+(1 row)
+
+--- (d) Show some rows from each table -----------------------------------
+
+csc343h-liming51=> select * from playerscoreboard where playerName = 'Faker' and kills = 0;
+        gameid         | playername | teamname | position | kills | gold  | visionscore
+-----------------------+------------+----------+----------+-------+-------+-------------
+ ESPORTSTMNT01/1691105 | Faker      | T1       | mid      |     0 | 11176 |          37
+ ESPORTSTMNT02/1735257 | Faker      | T1       | mid      |     0 |  9515 |          33
+ ESPORTSTMNT03/1764085 | Faker      | T1       | mid      |     0 | 10811 |          62
+ ESPORTSTMNT03/1813176 | Faker      | T1       | mid      |     0 | 15670 |          89
+ ESPORTSTMNT03/1814273 | Faker      | T1       | mid      |     0 | 13620 |          51
+ ESPORTSTMNT03/1814382 | Faker      | T1       | mid      |     0 | 10432 |          18
+ ESPORTSTMNT03_2055160 | Faker      | T1       | mid      |     0 | 11288 |          34
+ ESPORTSTMNT03_2102636 | Faker      | T1       | mid      |     0 | 11378 |          46
+(8 rows)
+
+
+csc343h-liming51=> select * from teamscoreboard where teamName = 'T1' and killsAt15 = 0;
+        gameid         | teamname | killsat10 | killsat15 | goldat10 | goldat15 | drakes
+-----------------------+----------+-----------+-----------+----------+----------+--------
+ ESPORTSTMNT01/1883205 | T1       |         0 |         0 |    15145 |    23767 |      0
+ ESPORTSTMNT01/1894450 | T1       |         0 |         0 |    15389 |    24952 |      5
+ ESPORTSTMNT01_2210716 | T1       |         0 |         0 |    15876 |    23955 |      5
+ ESPORTSTMNT02/1684220 | T1       |         0 |         0 |    16342 |    25409 |      4
+ ESPORTSTMNT03/1764123 | T1       |         0 |         0 |    14685 |    23814 |      2
+ ESPORTSTMNT03/1813176 | T1       |         0 |         0 |    15189 |    23772 |      3
+ ESPORTSTMNT03/1814273 | T1       |         0 |         0 |    15135 |    23188 |      1
+(7 rows)
+
+csc343h-liming51=> select * from match where blue = 'T1' and length > 1800 and result = 'red';
+        gameid         | length | patch | blue |        red        | result
+-----------------------+--------+-------+------+-------------------+--------
+ ESPORTSTMNT01/1691071 |   1887 | 11.01 | T1   | DWG KIA           | red
+ ESPORTSTMNT01/1720608 |   2070 | 11.01 | T1   | KT Rolster        | red
+ ESPORTSTMNT01/1887149 |   2016 | 11.04 | T1   | Gen.G             | red
+ ESPORTSTMNT01/1894450 |   2806 | 11.04 | T1   | KT Rolster        | red
+ ESPORTSTMNT01_2210452 |   2915 | 11.16 | T1   | Liiv SANDBOX      | red
+ ESPORTSTMNT01_2210455 |   2200 | 11.16 | T1   | Liiv SANDBOX      | red
+ ESPORTSTMNT01_2210716 |   2373 | 11.16 | T1   | Gen.G             | red
+ ESPORTSTMNT03/1757878 |   1895 | 11.03 | T1   | DWG KIA           | red
+ ESPORTSTMNT03/1765213 |   2240 | 11.03 | T1   | Liiv SANDBOX      | red
+ ESPORTSTMNT03/1766665 |   2146 | 11.03 | T1   | Nongshim RedForce | red
+ ESPORTSTMNT03_2055172 |   2247 | 11.15 | T1   | DRX               | red
+ ESPORTSTMNT05/1830257 |   2003 | 11.02 | T1   | Liiv SANDBOX      | red
+(12 rows)
+
+csc343h-liming51=> select * from player where teamName = 'T1';
+ playername | teamname
+------------+----------
+ Gumayusi   | T1
+ Cuzz       | T1
+ Ellim      | T1
+ Canna      | T1
+ Clozer     | T1
+ Teddy      | T1
+ Keria      | T1
+ Zeus       | T1
+ Oner       | T1
+ Faker      | T1
+(10 rows)
+
+csc343h-liming51=> select * from team where league = 'LPL';
+      teamname       | league
+---------------------+--------
+ Suning              | LPL
+ eStar               | LPL
+ Victory Five        | LPL
+ LNG Esports         | LPL
+ FunPlus Phoenix     | LPL
+ Rogue Warriors      | LPL
+ Invictus Gaming     | LPL
+ Top Esports         | LPL
+ ThunderTalk Gaming  | LPL
+ JD Gaming           | LPL
+ Royal Never Give Up | LPL
+ Team WE             | LPL
+ LGD Gaming          | LPL
+ Bilibili Gaming     | LPL
+ Oh My God           | LPL
+ EDward Gaming       | LPL
+ Rare Atom           | LPL
+(17 rows)

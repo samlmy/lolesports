@@ -1,0 +1,113 @@
+
+DROP VIEW IF EXISTS stats CASCADE;
+CREATE VIEW stats
+as
+select patch, teamName, avg(killsAt10) as avgKillsAt10 , avg(killsat15) as avgKillsAt15,
+avg(goldAt10) as avgGoldAt10, avg(goldAt15) as avgGoldAt15
+from TeamScoreboard
+natural join match
+group by patch, teamName
+order by teamName, patch;
+
+
+DROP VIEW IF EXISTS version CASCADE;
+CREATE VIEW version
+as
+select m.gameID, patch, blue, red, result, t1.killsAt10 as BlueKillsAt10, 
+t1.killsAt15 as BlueKillsAt15, t1.goldAt10 as BlueGoldAt10, 
+t1.goldAt15 as BlueGoldAt15, t2.killsAt10 as RedKillsAt10, 
+t2.killsAt15 as RedKillsAt15, t2.goldAt10 as RedGoldAt10, 
+t2.goldAt15 as RedGoldAt15
+from match as m
+join TeamScoreboard as t1
+on m.gameID = t1.gameID and blue = t1.teamName
+join TeamScoreboard as t2
+on m.gameID = t2.gameID and red = t2.teamName;
+
+-- winrate
+
+DROP VIEW IF EXISTS bluewin CASCADE;
+CREATE VIEW bluewin
+as
+select patch, blue, case
+    when result = 'blue' then 1
+    when result = 'red' then 0
+    end as wins
+from version;
+
+DROP VIEW IF EXISTS bluescore CASCADE;
+CREATE VIEW bluescore
+as
+select patch, blue, sum(wins) as win_count, count(blue) as total_games
+from bluewin
+group by patch, blue;
+
+
+DROP VIEW IF EXISTS redwin CASCADE;
+CREATE VIEW redwin
+as
+select patch, red, case
+    when result = 'red' then 1
+    when result = 'blue' then 0
+    end as wins
+from version;
+
+DROP VIEW IF EXISTS redscore CASCADE;
+CREATE VIEW redscore
+as
+select patch, red, sum(wins) as win_count, count(red) as total_games
+from redwin
+group by patch, red;
+
+DROP VIEW IF EXISTS totalscore CASCADE;
+CREATE VIEW totalscore
+as 
+select case
+    when b.patch is not null then b.patch
+    when r.patch is not null then r.patch
+    end as patch,
+    case 
+    when blue is not null then blue
+    when red is not null then red
+    end as teamName,
+    case 
+    when b.win_count is null then r.win_count
+    when r.win_count is null then b.win_count
+    else b.win_count + r.win_count 
+    end as totalwins,
+    case
+    when b.total_games is null then r.total_games
+    when r.total_games is null then b.total_games
+    else b.total_games + r.total_games 
+    end as total_games
+from bluescore as b
+full join redscore as r
+on b.patch = r.patch and blue = red
+order by teamName, patch;
+
+
+-- querie3 First table view
+
+select patch, teamName, avgKillsAt10, avgKillsAt15, avgGoldAt10, avgGoldAt15, 
+(cast(totalwins as FLOAT)/ cast(total_games as FLOAT)) * 100 as winrate
+from stats
+natural join totalscore
+where total_games >= 15;
+
+
+-- querie3 Second table view
+
+
+select patch, teamName, avg(kills) * 5 as teamAverageKill, avg(gold) * 5 as teamAverageGold
+from PlayerScoreboard 
+natural join match
+group by patch, teamName
+having (count(teamName) / 5) >= 15
+order by teamName, patch;
+
+
+
+
+
+
+
