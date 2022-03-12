@@ -1,0 +1,3 @@
+select avg(visionscore) as averageJungleVis, drakes from playerscoreboard p inner join teamscoreboard t on p.gameID = t.gameID where position = 'jng' group by drakes order by drakes;
+
+select avg(visionscore) as averageSupportVis, drakes from playerscoreboard p inner join teamscoreboard t on p.gameID = t.gameID where position = 'sup'group by drakes order by drakes;
